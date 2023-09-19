@@ -1,0 +1,37 @@
+version: '3.7'
+x-common_variables: &services_hosts
+  TEST_HOST: 172.20.0.3
+  CLICKHOUSE_CLUSTER: 172.20.0.22:8123
+  CLICKHOUSE_DATABASE: "reviews"
+  CLICKHOUSE_USERNAME: "review"
+  CLICKHOUSE_PASSWORD: "password"
+
+services:
+  test:
+    image: io
+    hostname: test
+    container_name: algos_test
+    ports:
+      - 8089:8080 # forward graffQL
+      - 4000:4000 # dev
+    stdin_open: true
+    tty: true
+    user: ${U_ID}:${U_ID}
+    environment: *services_hosts
+    working_dir: /opt/app/
+    volumes:
+      - ./:/opt/app
+      - ${HOME}/.ssh:${HOME}/.ssh:ro
+      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
+      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
+      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+    command: bash
+    networks:
+      algos_backend:
+        ipv4_address: 172.21.0.3
+
+networks:
+  algos_backend:
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
