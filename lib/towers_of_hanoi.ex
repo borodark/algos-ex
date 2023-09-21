@@ -1,20 +1,27 @@
 defmodule TowersOfHanoi do
-  # plates size in reverse order - bottom is on the right
-  _state =
-    %{a: [1, 2, 3, 4, 5, 6], b: [], c: []}
+  @moduledoc """
+  Erlang source
+  move(1, F, T, _V) -> 
+     io:format("Move from ~p to ~p~n", [F, T]);
+  move(N, F, T, V) -> 
+     move(N-1, F, V, T), 
+     move(1  , F, T, V),
+     move(N-1, V, T, F).
+  """
 
-  def move(ndisks, start_peg \\ 1, end_peg \\ 3)
+  def move(disks_total, from \\1, to \\3, aux \\2)
 
-  def move(ndisks, start_peg, end_peg) when ndisks > 0 do
-    IO.puts("-- Called for disks #{ndisks}: #{start_peg} -> #{end_peg}")
-    IO.puts("-- 1. calling move for disks #{ndisks-1}: #{start_peg} -> #{ 6 - start_peg - end_peg}")
-    move(ndisks - 1, start_peg, 6 - start_peg - end_peg)
-    IO.puts("Move disk #{ndisks} from peg #{start_peg} to peg #{end_peg}")
-    IO.puts("-- 2. calling move for disks #{ndisks-1}: #{ 6 - start_peg - end_peg} -> #{end_peg}")
-    move(ndisks - 1, 6 - start_peg - end_peg, end_peg)
+  def move(1, from, to, _aux) do
+    IO.puts("Move one from #{from} to #{to}")
   end
 
-  def move(ndisks, _start_peg, _end_peg) when ndisks == 0 do
-    IO.puts("^-- zero disks --^")
+  def move(ndisks, from, to, aux) do
+    IO.puts("-- Called for disks #{ndisks}: #{from} -> #{to} over #{aux}")
+    # IO.puts("-- 1. calling move for disks #{ndisks-1}: #{start_peg} -> #{ 6 - start_peg - end_peg}")
+    move(ndisks - 1, from, aux, to)
+    move(1, from, to, aux)
+
+    # IO.puts("-- 2. calling move for disks #{ndisks-1}: #{ 6 - start_peg - end_peg} -> #{end_peg}")
+    move(ndisks - 1, aux, to, from)
   end
 end
