@@ -36,6 +36,7 @@ defmodule Algos do
 
   def quicksort_random(list) do
     list |> IO.inspect(label: :rc)
+
     list
     |> List.pop_at(random_position_in(list))
     |> quicksort_random_()
@@ -76,6 +77,7 @@ defmodule Algos do
   Median pivot
   """
   def quicksort_median([]), do: []
+
   def quicksort_median(list) do
     list
     |> List.pop_at(index_of_median_of_three_random_elements_from(list))
@@ -84,18 +86,29 @@ defmodule Algos do
 
   defp quicksort_median_({nil, _}), do: []
   defp quicksort_median_({pivot, []}), do: [pivot]
+
   defp quicksort_median_({pivot, sublist}) do
     smaller_elements = for x <- sublist, x < pivot, do: x
     larget_elements = for x <- sublist, x >= pivot, do: x
-    quicksort_median_(List.pop_at(smaller_elements, 
-                                  index_of_median_of_three_random_elements_from(smaller_elements)))
-    ++ [pivot] ++
-    quicksort_median_(List.pop_at(larget_elements, 
-                                  index_of_median_of_three_random_elements_from(larget_elements)))
+
+    quicksort_median_(
+      List.pop_at(
+        smaller_elements,
+        index_of_median_of_three_random_elements_from(smaller_elements)
+      )
+    ) ++
+      [pivot] ++
+      quicksort_median_(
+        List.pop_at(
+          larget_elements,
+          index_of_median_of_three_random_elements_from(larget_elements)
+        )
+      )
   end
 
   defp index_of_median_of_three_random_elements_from(list) when length(list) < 3, do: 0
-  defp index_of_median_of_three_random_elements_from(list = [_|_]) do
+
+  defp index_of_median_of_three_random_elements_from(list = [_ | _]) do
     median =
       list
       |> Enum.take_random(3)
@@ -104,7 +117,8 @@ defmodule Algos do
         [a, b, c] when (b >= a and b <= c) or (b <= a and b >= c) -> b
         [_, _, c] -> c
       end
-    Enum.find_index(list, fn(x) -> x == median end)
+
+    Enum.find_index(list, fn x -> x == median end)
   end
 
   @doc """
@@ -114,18 +128,18 @@ defmodule Algos do
 
   iex> Algos.merge_sort([4,3,6,1,5,2])
   [1,2,3,4,5,6]
-  
+
   """
-  def merge_sort([one]), do: [one] 
-  def merge_sort(list)  do
-      {left,right} = :lists.split(length(list) |> div(2), list)
-      merge(merge_sort(left), merge_sort(right))
+  def merge_sort([one]), do: [one]
+
+  def merge_sort(list) do
+    {left, right} = :lists.split(length(list) |> div(2), list)
+    merge(merge_sort(left), merge_sort(right))
   end
 
   defp merge(l1, l2), do: merge(l1, l2, [])
-  defp merge([], l2, acc), do: acc++l2
-  defp merge(l1, [], acc), do: acc++l1
-  defp merge([h1|t1], [h2|t2], acc) when h2>=h1, do: merge(t1, [h2|t2], acc++[h1])
-  defp merge([h1|t1], [h2|t2], acc) when h1>h2,  do: merge([h1|t1], t2, acc++[h2])
-
+  defp merge([], l2, acc), do: acc ++ l2
+  defp merge(l1, [], acc), do: acc ++ l1
+  defp merge([h1 | t1], [h2 | t2], acc) when h2 >= h1, do: merge(t1, [h2 | t2], acc ++ [h1])
+  defp merge([h1 | t1], [h2 | t2], acc) when h1 > h2, do: merge([h1 | t1], t2, acc ++ [h2])
 end
