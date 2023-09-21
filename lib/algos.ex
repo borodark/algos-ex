@@ -142,4 +142,27 @@ defmodule Algos do
   defp merge(l1, [], acc), do: acc ++ l1
   defp merge([h1 | t1], [h2 | t2], acc) when h2 >= h1, do: merge(t1, [h2 | t2], acc ++ [h1])
   defp merge([h1 | t1], [h2 | t2], acc) when h1 > h2, do: merge([h1 | t1], t2, acc ++ [h2])
+  @doc """
+  binary_search
+
+  ## Examples
+
+  iex> Algos.binary_search([1,2,3,4,5,6], 4)
+  3
+
+  iex> Algos.binary_search([1,2,3,4,5,6], 7)
+  :not_found
+  """
+
+  def binary_search(list, value), do: binary_search(List.to_tuple(list), value, 0, length(list)-1)
+  def binary_search(_tuple, _value, low, high) when high < low, do: :not_found
+  def binary_search(tuple, value, low, high) do
+    mid = (low + high) |> div(2)
+    midval = elem(tuple, mid)
+    cond do
+      value <  midval -> binary_search(tuple, value, low, mid-1)
+      value >  midval -> binary_search(tuple, value, mid+1, high)
+      value == midval -> mid 
+    end
+  end
 end
