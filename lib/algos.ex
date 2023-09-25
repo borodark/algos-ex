@@ -142,6 +142,7 @@ defmodule Algos do
   defp merge(l1, [], acc), do: acc ++ l1
   defp merge([h1 | t1], [h2 | t2], acc) when h2 >= h1, do: merge(t1, [h2 | t2], acc ++ [h1])
   defp merge([h1 | t1], [h2 | t2], acc) when h1 > h2, do: merge([h1 | t1], t2, acc ++ [h2])
+
   @doc """
   binary_search
 
@@ -154,15 +155,78 @@ defmodule Algos do
   :not_found
   """
 
-  def binary_search(list, value), do: binary_search(List.to_tuple(list), value, 0, length(list)-1)
+  def binary_search(list, value),
+    do: binary_search(List.to_tuple(list), value, 0, length(list) - 1)
+
   def binary_search(_tuple, _value, low, high) when high < low, do: :not_found
+
   def binary_search(tuple, value, low, high) do
     mid = (low + high) |> div(2)
     midval = elem(tuple, mid)
+
     cond do
-      value <  midval -> binary_search(tuple, value, low, mid-1)
-      value >  midval -> binary_search(tuple, value, mid+1, high)
-      value == midval -> mid 
+      value < midval -> binary_search(tuple, value, low, mid - 1)
+      value > midval -> binary_search(tuple, value, mid + 1, high)
+      value == midval -> mid
     end
+  end
+
+  require Explorer.DataFrame, as: DF
+
+  def nx_test do
+    iris = Explorer.Datasets.iris()
+
+    normalized_iris =
+      DF.mutate(
+        iris,
+        for col <- across(~w(sepal_width sepal_length petal_length petal_width)) do
+          {col.name, (col - mean(col)) / variance(col)}
+        end
+      )
+
+    shuffled_normalized_iris = DF.shuffle(normalized_iris)
+    "---------> " |> IO.inspect()
+    train_df = DF.slice(shuffled_normalized_iris, 0..119)
+    test_df = DF.slice(shuffled_normalized_iris, 120..149)
+    test_df |> Explorer.DataFrame.shape() |> IO.inspect(label: :test)
+    train_df |> Explorer.DataFrame.shape() |> IO.inspect(label: :train)
+    feature_columns = ["sepal_length", "sepal_width", "petal_length", "petal_width"]
+    # label_column = "species"
+    x_train = Nx.stack(train_df[feature_columns], axis: 1)
+    train_categories = train_df["species"] |> Explorer.Series.cast(:category)
+    y_train = train_categories |> Nx.stack(axis: -1) |> Nx.equal(Nx.iota({1, 3}, axis: -1))
+    x_test = Nx.stack(test_df[feature_columns], axis: 1)
+    test_categories = test_df["species"] |> Explorer.Series.cast(:category)
+    y_test = test_categories |> Nx.stack(axis: -1) |> Nx.equal(Nx.iota({1, 3}, axis: -1))
+    model = Axon.input("iris_features") |> Axon.dense(3, activation: :softmax)
+    # Axon.Display.as_graph(model, Nx.template({1, 4}, :f32))
+    data_stream = Stream.repeatedly(fn -> {x_train, y_train} end)
+
+    trained_model_state =
+      model
+      |> Axon.Loop.trainer(:categorical_cross_entropy, :sgd)
+      |> Axon.Loop.metric(:accuracy)
+      |> Axon.Loop.run(data_stream, %{}, iterations: 500, epochs: 10)
+
+    #
+    data = [{x_test, y_test}]
+
+    # data = [{x_train, y_train}]
+    model
+    |> Axon.Loop.evaluator()
+    |> Axon.Loop.metric(:accuracy)
+    |> Axon.Loop.run(data, trained_model_state)
+  end
+
+  def tensors do
+    tensor = Nx.random_uniform({1_000_000})
+
+    Benchee.run(
+      %{
+        "JIT with EXLA" => fn -> apply(EXLA.jit(&Softmax.softmax/1), [tensor]) end,
+        "Regular Elixir" => fn -> Softmax.softmax(tensor) end
+      },
+      time: 20
+    )
   end
 end
