@@ -17,19 +17,20 @@ services:
     stdin_open: true
     tty: true
     user: ${U_ID}:${U_ID}
-    environment: *services_hosts
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    #environment: *services_hosts
     working_dir: /opt/app/
     volumes:
-      - ./:/opt/app
-      - ${HOME}/.ssh:${HOME}/.ssh:ro
-      - ${HOME}/.bashrc:${HOME}/.bashrc:ro
-      - ${HOME}/.bash_profile:${HOME}/.bash_profile:ro
-      - ${HOME}/.bash_aliases:${HOME}/.bash_aliases:ro
+      - ./:/opt/app/project/
+      - ${HOME}/.ssh:/opt/app/.ssh:ro
+      - ${HOME}/.bashrc:/opt/app/.bashrc:ro
+      - ${HOME}/.bash_profile:/opt/app/.bash_profile:ro
+      - ${HOME}/.bash_aliases:/opt/app/.bash_aliases:ro
     command: bash
     networks:
       algos_backend:
         ipv4_address: 172.21.0.3
-
 networks:
   algos_backend:
     ipam:

@@ -1,0 +1,12 @@
+FROM elixir:1.15
+#RUN      apk update && \
+#         apk upgrade && \
+#         apk --no-cache add busybox-extras
+RUN apt update && apt install -y apt-transport-https htop git sudo inotify-tools
+RUN curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor >bazel-archive-keyring.gpg && mv bazel-archive-keyring.gpg /usr/share/keyrings && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+RUN apt update && apt install -y bazel cmake
+RUN addgroup --gid 1000 io && adduser --shell /bin/bash --uid 1000 --gid 1000 --disabled-password --home /opt/app io
+RUN echo "io ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/io \
+        && chmod 0440 /etc/sudoers.d/io
+USER io
+RUN mix local.rebar --force &&  mix local.hex --force && mix archive.install --force hex phx_new
