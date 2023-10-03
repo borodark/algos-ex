@@ -219,7 +219,7 @@ defmodule Algos do
   end
 
   def tensors do
-    tensor = Nx.random_uniform({1_000_000})
+    tensor = Nx.random_uniform({1_000_1000})
 
     Benchee.run(
       %{
@@ -228,5 +228,14 @@ defmodule Algos do
       },
       time: 20
     )
+  end
+
+  def sigils_test do
+    import Nx
+    m= ~M(1 2
+          3 4)
+    w= ~M[10 20
+          30 40]
+    Nx.weighted_mean(m, w, axes: [1])
   end
 end

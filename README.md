@@ -1,6 +1,11 @@
 # Algos
 
-**TODO: Add description**
+
+https://gitlab.com/alelec/arm-none-eabi-gcc-deb/-/releases
+https://github.com/atomvm/AtomVM
+https://www.erlang-solutions.com/blog/smart-sensors-with-erlang-and-atomvm-smart-cities-smart-houses-and-manufacturing-monitoring/
+
+
 
 ## Installation
 
